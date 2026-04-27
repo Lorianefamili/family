@@ -27,11 +27,6 @@ const bot = new TelegramBot(process.env.BOT_TOKEN, {
   }
 });
 
-bot.deleteWebHook().then(() => {
-  bot.startPolling();
-  console.log('✅ Polling démarré proprement');
-});
-
 const ADMIN_ID = parseInt(process.env.ADMIN_ID);
 const POINTS_PAR_PUB = parseInt(process.env.POINTS_PAR_PUB) || 10;
 const MINI_APP_URL = process.env.MINI_APP_URL;
@@ -294,7 +289,15 @@ app.get('/purchases/:userId', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
+// Express démarre EN PREMIER
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Serveur démarré sur le port ${PORT}`);
-  console.log('🤖 Bot démarré...');
+  
+  // Bot démarre APRÈS Express
+  bot.deleteWebHook().then(() => {
+    bot.startPolling();
+    console.log('🤖 Bot démarré...');
+    console.log('✅ Polling démarré proprement');
+  });
 });

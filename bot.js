@@ -19,7 +19,18 @@ admin.initializeApp({
 const db = admin.firestore();
 
 // Init Bot
-const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
+const bot = new TelegramBot(process.env.BOT_TOKEN, { 
+  polling: {
+    autoStart: false,
+    interval: 2000
+  }
+});
+
+// Supprimer le webhook avant de démarrer le polling
+bot.deleteWebHook().then(() => {
+  bot.startPolling();
+  console.log('✅ Polling démarré proprement');
+});
 
 const ADMIN_ID = parseInt(process.env.ADMIN_ID);
 const POINTS_PAR_PUB = parseInt(process.env.POINTS_PAR_PUB) || 10;

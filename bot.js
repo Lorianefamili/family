@@ -293,5 +293,8 @@ app.get('/purchases/:userId', async (req, res) => {
   res.json(purchases);
 });
 
-app.listen(process.env.PORT || 3000, () => console.log('✅ Serveur démarré sur le port 3000'));
-console.log('🤖 Bot démarré...');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Serveur démarré sur le port ${PORT}`);
+  console.log('🤖 Bot démarré...');
+});

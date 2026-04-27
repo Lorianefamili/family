@@ -1,8 +1,16 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const admin = require('firebase-admin');
-const serviceAccount = JSON.parse(Buffer.from(process.env.FIREBASE_KEY, 'utf8').toString());
-serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+let serviceAccount;
+try {
+  serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+  if (serviceAccount.private_key) {
+    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+  }
+} catch(e) {
+  console.error('Erreur parsing FIREBASE_KEY:', e.message);
+  process.exit(1);
+}
 
 // Init Firebase
 admin.initializeApp({

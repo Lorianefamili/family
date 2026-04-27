@@ -1,6 +1,7 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const admin = require('firebase-admin');
+
 let serviceAccount;
 try {
   serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
@@ -26,7 +27,6 @@ const bot = new TelegramBot(process.env.BOT_TOKEN, {
   }
 });
 
-// Supprimer le webhook avant de démarrer le polling
 bot.deleteWebHook().then(() => {
   bot.startPolling();
   console.log('✅ Polling démarré proprement');
@@ -35,45 +35,6 @@ bot.deleteWebHook().then(() => {
 const ADMIN_ID = parseInt(process.env.ADMIN_ID);
 const POINTS_PAR_PUB = parseInt(process.env.POINTS_PAR_PUB) || 10;
 const MINI_APP_URL = process.env.MINI_APP_URL;
-// ─────────────────────────────────────────────
-// COMMANDE /deletecontent (ADMIN)
-// ─────────────────────────────────────────────
-bot.onText(/\/deletecontent/, async (msg) => {
-  const userId = msg.from.id;
-  if (userId !== ADMIN_ID) return bot.sendMessage(userId, '❌ Commande réservée à l\'admin.');
-
-  // Récupérer tous les contenus
-  const snap = await db.collection('content').get();
-  
-  if (snap.empty) {
-    return bot.sendMessage(userId, '❌ Aucun contenu dans la boutique.');
-  }
-
-  let liste = '🗑️ Quel contenu supprimer ? Réponds avec le numéro :\n\n';
-  const items = [];
-  snap.forEach(doc => {
-    items.push({ id: doc.id, ...doc.data() });
-  });
-
-  items.forEach((item, index) => {
-    liste += `${index + 1}. ${item.title} — ${item.price} pts\n`;
-  });
-
-  bot.sendMessage(userId, liste);
-
-  bot.once('message', async (replyMsg) => {
-    if (replyMsg.from.id !== ADMIN_ID) return;
-
-    const choix = parseInt(replyMsg.text) - 1;
-    if (isNaN(choix) || choix < 0 || choix >= items.length) {
-      return bot.sendMessage(userId, '❌ Numéro invalide.');
-    }
-
-    const item = items[choix];
-    await db.collection('content').doc(item.id).delete();
-    bot.sendMessage(userId, `✅ "${item.title}" supprimé de la boutique !`);
-  });
-});
 
 // ─────────────────────────────────────────────
 // COMMANDE /start
@@ -82,7 +43,6 @@ bot.onText(/\/start/, async (msg) => {
   const userId = msg.from.id;
   const username = msg.from.username || msg.from.first_name;
 
-  // Créer l'utilisateur s'il n'existe pas
   const userRef = db.collection('users').doc(String(userId));
   const userDoc = await userRef.get();
 
@@ -128,38 +88,84 @@ bot.onText(/\/points/, async (msg) => {
 // ─────────────────────────────────────────────
 bot.onText(/\/addcontent/, async (msg) => {
   const userId = msg.from.id;
-
-  if (userId !== ADMIN_ID) {
-    return bot.sendMessage(userId, '❌ Commande réservée à l\'admin.');
-  }
+  if (userId !== ADMIN_ID) return bot.sendMessage(userId, '❌ Commande réservée à l\'admin.');
 
   bot.sendMessage(userId, '📸 Envoie-moi la photo ou vidéo à ajouter au catalogue.');
 
-  // Écoute le prochain message de l'admin
- bot.sendMessage(ADMIN_ID, '✏️ Donne un titre, un prix et une catégorie séparés par une virgule.\nEx: Photo plage, 50, photo\n\nCatégories: photo / video / premium');
+  bot.once('message', async (mediaMsg) => {
+    if (mediaMsg.from.id !== ADMIN_ID) return;
 
-bot.once('message', async (infoMsg) => {
-  if (infoMsg.from.id !== ADMIN_ID) return;
+    let fileId = null;
+    let type = null;
 
-  const parts = infoMsg.text.split(',');
-  if (parts.length < 3) return bot.sendMessage(ADMIN_ID, '❌ Format incorrect. Ex: Photo plage, 50, photo');
+    if (mediaMsg.photo) {
+      fileId = mediaMsg.photo[mediaMsg.photo.length - 1].file_id;
+      type = 'photo';
+    } else if (mediaMsg.video) {
+      fileId = mediaMsg.video.file_id;
+      type = 'video';
+    } else {
+      return bot.sendMessage(ADMIN_ID, '❌ Envoie uniquement une photo ou une vidéo.');
+    }
 
-  const title = parts[0].trim();
-  const price = parseInt(parts[1].trim());
-  const category = parts[2].trim().toLowerCase();
+    bot.sendMessage(ADMIN_ID, '✏️ Donne un titre, un prix et une catégorie séparés par une virgule.\nEx: Photo plage, 50, photo\n\nCatégories: photo / video / premium');
 
-  if (isNaN(price)) return bot.sendMessage(ADMIN_ID, '❌ Le prix doit être un nombre.');
-  if (!['photo', 'video', 'premium'].includes(category)) {
-    return bot.sendMessage(ADMIN_ID, '❌ Catégorie invalide. Choisis: photo / video / premium');
-  }
+    bot.once('message', async (infoMsg) => {
+      if (infoMsg.from.id !== ADMIN_ID) return;
 
-  await db.collection('content').add({
-    title, price, fileId, type, category,
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
+      const parts = infoMsg.text.split(',');
+      if (parts.length < 3) return bot.sendMessage(ADMIN_ID, '❌ Format incorrect. Ex: Photo plage, 50, photo');
+
+      const title = parts[0].trim();
+      const price = parseInt(parts[1].trim());
+      const category = parts[2].trim().toLowerCase();
+
+      if (isNaN(price)) return bot.sendMessage(ADMIN_ID, '❌ Le prix doit être un nombre.');
+      if (!['photo', 'video', 'premium'].includes(category)) {
+        return bot.sendMessage(ADMIN_ID, '❌ Catégorie invalide. Choisis: photo / video / premium');
+      }
+
+      await db.collection('content').add({
+        title, price, fileId, type, category,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      bot.sendMessage(ADMIN_ID, `✅ Contenu ajouté !\n📌 Titre: ${title}\n💰 Prix: ${price} points\n📁 Catégorie: ${category}`);
+    });
+  });
+});
+
+// ─────────────────────────────────────────────
+// COMMANDE /deletecontent (ADMIN)
+// ─────────────────────────────────────────────
+bot.onText(/\/deletecontent/, async (msg) => {
+  const userId = msg.from.id;
+  if (userId !== ADMIN_ID) return bot.sendMessage(userId, '❌ Commande réservée à l\'admin.');
+
+  const snap = await db.collection('content').get();
+  
+  if (snap.empty) return bot.sendMessage(userId, '❌ Aucun contenu dans la boutique.');
+
+  let liste = '🗑️ Quel contenu supprimer ? Réponds avec le numéro :\n\n';
+  const items = [];
+  snap.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+  items.forEach((item, index) => {
+    liste += `${index + 1}. ${item.title} — ${item.price} pts\n`;
   });
 
-      bot.sendMessage(ADMIN_ID, `✅ Contenu ajouté !\n📌 Titre: ${title}\n💰 Prix: ${price} points\n📁 Type: ${type}`);
-    });
+  bot.sendMessage(userId, liste);
+
+  bot.once('message', async (replyMsg) => {
+    if (replyMsg.from.id !== ADMIN_ID) return;
+
+    const choix = parseInt(replyMsg.text) - 1;
+    if (isNaN(choix) || choix < 0 || choix >= items.length) {
+      return bot.sendMessage(userId, '❌ Numéro invalide.');
+    }
+
+    const item = items[choix];
+    await db.collection('content').doc(item.id).delete();
+    bot.sendMessage(userId, `✅ "${item.title}" supprimé de la boutique !`);
   });
 });
 
@@ -178,23 +184,20 @@ bot.onText(/\/stats/, async (msg) => {
   usersSnap.forEach(doc => { totalPoints += doc.data().points || 0; });
 
   bot.sendMessage(ADMIN_ID,
-    `📊 *Statistiques*\n\n` +
-    `👥 Utilisateurs: ${usersSnap.size}\n` +
-    `🖼️ Contenus en boutique: ${contentSnap.size}\n` +
-    `🛍️ Achats effectués: ${purchasesSnap.size}\n` +
-    `💰 Points en circulation: ${totalPoints}`,
+    `📊 *Statistiques*\n\n👥 Utilisateurs: ${usersSnap.size}\n🖼️ Contenus: ${contentSnap.size}\n🛍️ Achats: ${purchasesSnap.size}\n💰 Points en circulation: ${totalPoints}`,
     { parse_mode: 'Markdown' }
   );
 });
 
 // ─────────────────────────────────────────────
-// WEBHOOK depuis la Mini App
+// EXPRESS + API
 // ─────────────────────────────────────────────
 const express = require('express');
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const path = require('path');
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -205,15 +208,27 @@ app.post('/reward', async (req, res) => {
   if (!userId) return res.status(400).json({ error: 'userId manquant' });
 
   const userRef = db.collection('users').doc(String(userId));
+  const userDoc = await userRef.get();
+  const userData = userDoc.data();
+
+  const now = Date.now();
+  const lastAd = userData.lastAd ? userData.lastAd.toMillis() : 0;
+  const diff = now - lastAd;
+
+  if (diff < 30000) {
+    const restant = Math.ceil((30000 - diff) / 1000);
+    return res.status(400).json({ error: `Attends encore ${restant} secondes !` });
+  }
+
   await userRef.update({
-    points: admin.firestore.FieldValue.increment(POINTS_PAR_PUB)
+    points: admin.firestore.FieldValue.increment(POINTS_PAR_PUB),
+    lastAd: admin.firestore.Timestamp.now()
   });
 
-  const userDoc = await userRef.get();
-  const newPoints = userDoc.data().points;
+  const updatedDoc = await userRef.get();
+  const newPoints = updatedDoc.data().points;
 
-  bot.sendMessage(userId, `🎉 Tu as gagné *${POINTS_PAR_PUB} points* en regardant la pub !\n💰 Total: *${newPoints} points*`, { parse_mode: 'Markdown' });
-
+  bot.sendMessage(userId, `🎉 Tu as gagné *${POINTS_PAR_PUB} points* !\n💰 Total: *${newPoints} points*`, { parse_mode: 'Markdown' });
   res.json({ success: true, points: newPoints });
 });
 
@@ -221,7 +236,6 @@ app.post('/reward', async (req, res) => {
 app.get('/user/:userId', async (req, res) => {
   const userRef = db.collection('users').doc(req.params.userId);
   const userDoc = await userRef.get();
-
   if (!userDoc.exists) return res.status(404).json({ error: 'Utilisateur introuvable' });
   res.json(userDoc.data());
 });
@@ -239,45 +253,28 @@ app.post('/buy', async (req, res) => {
   const { userId, contentId } = req.body;
   if (!userId || !contentId) return res.status(400).json({ error: 'Paramètres manquants' });
 
-  // Vérifier si déjà acheté
   const purchaseRef = db.collection('purchases').doc(`${userId}_${contentId}`);
   const purchaseDoc = await purchaseRef.get();
+  if (purchaseDoc.exists) return res.status(400).json({ error: 'Déjà acheté' });
 
-  if (purchaseDoc.exists) {
-    return res.status(400).json({ error: 'Déjà acheté' });
-  }
-
-  // Récupérer le contenu
   const contentRef = db.collection('content').doc(contentId);
   const contentDoc = await contentRef.get();
   if (!contentDoc.exists) return res.status(404).json({ error: 'Contenu introuvable' });
 
   const content = contentDoc.data();
-
-  // Vérifier les points
   const userRef = db.collection('users').doc(String(userId));
   const userDoc = await userRef.get();
   if (!userDoc.exists) return res.status(404).json({ error: 'Utilisateur introuvable' });
 
   const userPoints = userDoc.data().points || 0;
-  if (userPoints < content.price) {
-    return res.status(400).json({ error: 'Points insuffisants' });
-  }
+  if (userPoints < content.price) return res.status(400).json({ error: 'Points insuffisants' });
 
-  // Débiter les points
-  await userRef.update({
-    points: admin.firestore.FieldValue.increment(-content.price)
-  });
-
-  // Enregistrer l'achat
+  await userRef.update({ points: admin.firestore.FieldValue.increment(-content.price) });
   await purchaseRef.set({
-    userId,
-    contentId,
-    title: content.title,
+    userId, contentId, title: content.title,
     purchasedAt: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  // Envoyer le contenu en message privé
   if (content.type === 'photo') {
     await bot.sendPhoto(userId, content.fileId, { caption: `✅ Tu as débloqué : *${content.title}*`, parse_mode: 'Markdown' });
   } else if (content.type === 'video') {
@@ -290,14 +287,11 @@ app.post('/buy', async (req, res) => {
 
 // Récupérer les achats d'un user
 app.get('/purchases/:userId', async (req, res) => {
-  const snap = await db.collection('purchases')
-    .where('userId', '==', req.params.userId)
-    .get();
-
+  const snap = await db.collection('purchases').where('userId', '==', req.params.userId).get();
   const purchases = [];
   snap.forEach(doc => purchases.push({ id: doc.id, ...doc.data() }));
   res.json(purchases);
 });
 
-app.listen(3000, () => console.log('✅ Serveur démarré sur le port 3000'));
+app.listen(process.env.PORT || 3000, () => console.log('✅ Serveur démarré sur le port 3000'));
 console.log('🤖 Bot démarré...');

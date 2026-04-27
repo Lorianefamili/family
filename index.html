@@ -33,7 +33,6 @@
       overflow-x: hidden;
     }
 
-    /* Noise texture overlay */
     body::before {
       content: '';
       position: fixed;
@@ -51,7 +50,6 @@
       padding: 0 0 100px;
     }
 
-    /* HEADER */
     .header {
       padding: 32px 20px 20px;
       text-align: center;
@@ -101,47 +99,9 @@
       filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.5));
     }
 
-    /* NAV */
-    .nav {
-      display: flex;
-      gap: 8px;
-      padding: 0 16px;
-      margin-bottom: 24px;
-    }
-
-    .nav-btn {
-      flex: 1;
-      padding: 12px 8px;
-      border: 1px solid var(--glass-border);
-      border-radius: 14px;
-      background: var(--glass);
-      color: var(--text-dim);
-      font-size: 12px;
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      backdrop-filter: blur(10px);
-      text-align: center;
-    }
-
-    .nav-btn.active {
-      background: linear-gradient(135deg, #ff6b35, #f7931e);
-      border-color: transparent;
-      color: #fff;
-    }
-
-    .nav-btn span {
-      display: block;
-      font-size: 18px;
-      margin-bottom: 4px;
-    }
-
-    /* SECTIONS */
     .section { display: none; padding: 0 16px; }
     .section.active { display: block; }
 
-    /* PUB SECTION */
     .pub-card {
       background: var(--glass);
       border: 1px solid var(--glass-border);
@@ -201,36 +161,37 @@
 
     .btn-primary:active { transform: scale(0.98); }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-/* CATEGORIES */
-.category-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
 
-.cat-btn {
-  padding: 8px 16px;
-  border: 1px solid var(--glass-border);
-  border-radius: 50px;
-  background: var(--glass);
-  color: var(--text-dim);
-  font-size: 13px;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s;
-  backdrop-filter: blur(10px);
-}
+    /* CATEGORIES */
+    .category-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
 
-.cat-btn.active {
-  background: linear-gradient(135deg, #ff6b35, #f7931e);
-  border-color: transparent;
-  color: #fff;
-}
-    /* CATALOGUE */
+    .cat-btn {
+      padding: 8px 16px;
+      border: 1px solid var(--glass-border);
+      border-radius: 50px;
+      background: var(--glass);
+      color: var(--text-dim);
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      backdrop-filter: blur(10px);
+    }
+
+    .cat-btn.active {
+      background: linear-gradient(135deg, #ff6b35, #f7931e);
+      border-color: transparent;
+      color: #fff;
+    }
+
     .section-title {
       font-family: 'Playfair Display', serif;
       font-size: 22px;
@@ -312,9 +273,7 @@
       font-size: 11px;
     }
 
-    .content-info {
-      padding: 10px 12px;
-    }
+    .content-info { padding: 10px 12px; }
 
     .content-title {
       font-size: 13px;
@@ -354,7 +313,6 @@
       color: #00c864;
     }
 
-    /* MES ACHATS */
     .purchases-list {
       display: flex;
       flex-direction: column;
@@ -373,7 +331,6 @@
     }
 
     .purchase-icon { font-size: 32px; }
-
     .purchase-info { flex: 1; }
 
     .purchase-title {
@@ -387,7 +344,6 @@
       color: var(--text-dim);
     }
 
-    /* EMPTY STATE */
     .empty-state {
       text-align: center;
       padding: 48px 24px;
@@ -396,7 +352,6 @@
 
     .empty-state .emoji { font-size: 48px; margin-bottom: 16px; display: block; }
 
-    /* TOAST */
     .toast {
       position: fixed;
       bottom: 110px;
@@ -418,7 +373,6 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    /* BOTTOM NAV */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -447,7 +401,6 @@
     .bottom-nav-btn span { display: block; font-size: 22px; margin-bottom: 3px; }
     .bottom-nav-btn.active { color: var(--orange); }
 
-    /* LOADING */
     .loading {
       text-align: center;
       padding: 40px;
@@ -484,17 +437,15 @@
     <!-- SECTION BOUTIQUE -->
     <div class="section" id="section-boutique">
       <div class="section-title">🛍️ Boutique</div>
-
-<div class="category-tabs">
-  <button class="cat-btn active" onclick="filterCatalogue('all', this)">🌟 Tout</button>
-  <button class="cat-btn" onclick="filterCatalogue('photo', this)">📸 Photos</button>
-  <button class="cat-btn" onclick="filterCatalogue('video', this)">🎥 Vidéos</button>
-  <button class="cat-btn" onclick="filterCatalogue('premium', this)">⭐ Premium</button>
-</div>
-
-<div class="catalogue-grid" id="catalogueGrid">
-  <div class="loading">Chargement...</div>
-</div>
+      <div class="category-tabs">
+        <button class="cat-btn active" onclick="filterCatalogue('all', this)">🌟 Tout</button>
+        <button class="cat-btn" onclick="filterCatalogue('photo', this)">📸 Photos</button>
+        <button class="cat-btn" onclick="filterCatalogue('video', this)">🎥 Vidéos</button>
+        <button class="cat-btn" onclick="filterCatalogue('premium', this)">⭐ Premium</button>
+      </div>
+      <div class="catalogue-grid" id="catalogueGrid">
+        <div class="loading">Chargement...</div>
+      </div>
     </div>
 
     <!-- SECTION MES ACHATS -->
@@ -529,13 +480,12 @@
     let userId = tg.initDataUnsafe?.user?.id;
     let userPoints = 0;
     let purchases = [];
-    let adCooldown = false;
+    let allItems = [];
+    let currentFilter = 'all';
 
     // ── INIT ──
     async function init() {
-      if (!userId) {
-        userId = 'test123'; // Pour tester en dehors de Telegram
-      }
+      if (!userId) userId = 'test123';
       await loadUser();
       await loadPurchases();
     }
@@ -566,19 +516,12 @@
       document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(`section-${name}`).classList.add('active');
       btn.classList.add('active');
-
       if (name === 'boutique') loadCatalogue();
       if (name === 'achats') renderPurchases();
     }
 
     // ── PUB ──
     function watchAd() {
-      if (adCooldown) {
-        showToast('⏳ Attends un peu avant la prochaine pub !');
-        return;
-      }
-
-      // Intégration AdGram - remplace par ton bloc ID AdGram
       if (window.Adsgram) {
         const AdController = window.Adsgram.init({ blockId: '28820' });
         AdController.show().then(async () => {
@@ -587,7 +530,6 @@
           showToast('❌ Pub non disponible, réessaie plus tard.');
         });
       } else {
-        // Mode test sans AdGram
         creditPoints();
       }
     }
@@ -600,15 +542,19 @@
           body: JSON.stringify({ userId: String(userId) })
         });
         const data = await res.json();
+
+        if (data.error) {
+          showToast(`⏳ ${data.error}`);
+          return;
+        }
+
         userPoints = data.points;
         document.getElementById('pointsValue').textContent = userPoints;
         showToast('🎉 +10 points gagnés !');
 
-        adCooldown = true;
         document.getElementById('watchAdBtn').disabled = true;
         document.getElementById('watchAdBtn').textContent = '⏳ Patiente 30s...';
         setTimeout(() => {
-          adCooldown = false;
           document.getElementById('watchAdBtn').disabled = false;
           document.getElementById('watchAdBtn').textContent = '▶ Regarder une pub';
         }, 30000);
@@ -618,92 +564,62 @@
     }
 
     // ── CATALOGUE ──
-    let allItems = [];
-let currentFilter = 'all';
+    function filterCatalogue(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderCatalogue();
+    }
 
-function filterCatalogue(filter, btn) {
-  currentFilter = filter;
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderCatalogue();
-}
+    function renderCatalogue() {
+      const grid = document.getElementById('catalogueGrid');
+      const purchaseIds = purchases.map(p => p.contentId);
 
-function renderCatalogue() {
-  const grid = document.getElementById('catalogueGrid');
-  const purchaseIds = purchases.map(p => p.contentId);
+      const filtered = currentFilter === 'all'
+        ? allItems
+        : allItems.filter(item => item.category === currentFilter);
 
-  const filtered = currentFilter === 'all' 
-    ? allItems 
-    : allItems.filter(item => item.category === currentFilter);
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><span class="emoji">🛍️</span>Aucun contenu dans cette catégorie.</div>';
+        return;
+      }
 
-  if (filtered.length === 0) {
-    grid.innerHTML = '<div class="empty-state"><span class="emoji">🛍️</span>Aucun contenu dans cette catégorie.</div>';
-    return;
-  }
-
-  grid.innerHTML = filtered.map(item => {
-    const owned = purchaseIds.includes(item.id);
-    const typeIcon = item.category === 'video' ? '🎥' : item.category === 'premium' ? '⭐' : '📸';
-    return `
-      <div class="content-card" onclick="buyContent('${item.id}', ${item.price}, '${item.title}', ${owned})">
-        <div class="content-preview ${owned ? 'unlocked' : ''}">
-          <div style="font-size:48px;">${typeIcon}</div>
-          <div class="lock-icon">${owned ? '' : '🔒'}</div>
-          <div class="owned-badge">✅ Acheté</div>
-          <div class="content-type-badge">${typeIcon}</div>
-        </div>
-        <div class="content-info">
-          <div class="content-title">${item.title}</div>
-          <div class="content-footer">
-            <div class="content-price">${owned ? '✅' : `💰 ${item.price} pts`}</div>
-            <button class="btn-buy ${owned ? 'owned' : ''}">${owned ? 'Acheté' : 'Acheter'}</button>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-async function loadCatalogue() {
-  const grid = document.getElementById('catalogueGrid');
-  grid.innerHTML = '<div class="loading">Chargement...</div>';
-
-  try {
-    const res = await fetch(`${API_URL}/catalogue`);
-    allItems = await res.json();
-    renderCatalogue();
-  } catch (e) {
-    grid.innerHTML = '<div class="empty-state"><span class="emoji">❌</span>Erreur de chargement.</div>';
-  }
-}
-        const purchaseIds = purchases.map(p => p.contentId);
-
-        grid.innerHTML = items.map(item => {
-          const owned = purchaseIds.includes(item.id);
-          const typeIcon = item.type === 'video' ? '🎥' : '📸';
-          return `
-            <div class="content-card" onclick="buyContent('${item.id}', ${item.price}, '${item.title}', ${owned})">
-              <div class="content-preview ${owned ? 'unlocked' : ''}">
-                <div style="font-size:48px;">${typeIcon}</div>
-                <div class="lock-icon">${owned ? '' : '🔒'}</div>
-                <div class="owned-badge">✅ Acheté</div>
-                <div class="content-type-badge">${typeIcon}</div>
-              </div>
-              <div class="content-info">
-                <div class="content-title">${item.title}</div>
-                <div class="content-footer">
-                  <div class="content-price">${owned ? '✅' : `💰 ${item.price} pts`}</div>
-                  <button class="btn-buy ${owned ? 'owned' : ''}">${owned ? 'Acheté' : 'Acheter'}</button>
-                </div>
+      grid.innerHTML = filtered.map(item => {
+        const owned = purchaseIds.includes(item.id);
+        const typeIcon = item.category === 'video' ? '🎥' : item.category === 'premium' ? '⭐' : '📸';
+        return `
+          <div class="content-card" onclick="buyContent('${item.id}', ${item.price}, '${item.title}', ${owned})">
+            <div class="content-preview ${owned ? 'unlocked' : ''}">
+              <div style="font-size:48px;">${typeIcon}</div>
+              <div class="lock-icon">${owned ? '' : '🔒'}</div>
+              <div class="owned-badge">✅ Acheté</div>
+              <div class="content-type-badge">${typeIcon}</div>
+            </div>
+            <div class="content-info">
+              <div class="content-title">${item.title}</div>
+              <div class="content-footer">
+                <div class="content-price">${owned ? '✅' : `💰 ${item.price} pts`}</div>
+                <button class="btn-buy ${owned ? 'owned' : ''}">${owned ? 'Acheté' : 'Acheter'}</button>
               </div>
             </div>
-          `;
-        }).join('');
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadCatalogue() {
+      const grid = document.getElementById('catalogueGrid');
+      grid.innerHTML = '<div class="loading">Chargement...</div>';
+      try {
+        const res = await fetch(`${API_URL}/catalogue`);
+        allItems = await res.json();
+        renderCatalogue();
       } catch (e) {
         grid.innerHTML = '<div class="empty-state"><span class="emoji">❌</span>Erreur de chargement.</div>';
       }
     }
 
+    // ── ACHAT ──
     async function buyContent(contentId, price, title, owned) {
       if (owned) {
         showToast('✅ Tu possèdes déjà ce contenu !');
@@ -717,7 +633,6 @@ async function loadCatalogue() {
 
       tg.showConfirm(`Acheter "${title}" pour ${price} points ?`, async (confirmed) => {
         if (!confirmed) return;
-
         try {
           const res = await fetch(`${API_URL}/buy`, {
             method: 'POST',
@@ -735,7 +650,7 @@ async function loadCatalogue() {
           document.getElementById('pointsValue').textContent = userPoints;
           showToast('🎉 Contenu envoyé en message privé !');
           await loadPurchases();
-          await loadCatalogue();
+          renderCatalogue();
         } catch (e) {
           showToast('❌ Erreur lors de l\'achat.');
         }
@@ -745,12 +660,10 @@ async function loadCatalogue() {
     // ── MES ACHATS ──
     function renderPurchases() {
       const list = document.getElementById('purchasesList');
-
       if (purchases.length === 0) {
         list.innerHTML = '<div class="empty-state"><span class="emoji">📭</span>Aucun achat pour le moment.<br>Gagne des points et explore la boutique !</div>';
         return;
       }
-
       list.innerHTML = purchases.map(p => `
         <div class="purchase-item">
           <div class="purchase-icon">📸</div>

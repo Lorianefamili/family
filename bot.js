@@ -172,6 +172,8 @@ bot.onText(/\/stats/, async (msg) => {
 // ─────────────────────────────────────────────
 const express = require('express');
 const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 const path = require('path');
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));

@@ -201,7 +201,35 @@
 
     .btn-primary:active { transform: scale(0.98); }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+/* CATEGORIES */
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
 
+.cat-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--glass-border);
+  border-radius: 50px;
+  background: var(--glass);
+  color: var(--text-dim);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+}
+
+.cat-btn.active {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  border-color: transparent;
+  color: #fff;
+}
     /* CATALOGUE */
     .section-title {
       font-family: 'Playfair Display', serif;
@@ -456,9 +484,17 @@
     <!-- SECTION BOUTIQUE -->
     <div class="section" id="section-boutique">
       <div class="section-title">🛍️ Boutique</div>
-      <div class="catalogue-grid" id="catalogueGrid">
-        <div class="loading">Chargement...</div>
-      </div>
+
+<div class="category-tabs">
+  <button class="cat-btn active" onclick="filterCatalogue('all', this)">🌟 Tout</button>
+  <button class="cat-btn" onclick="filterCatalogue('photo', this)">📸 Photos</button>
+  <button class="cat-btn" onclick="filterCatalogue('video', this)">🎥 Vidéos</button>
+  <button class="cat-btn" onclick="filterCatalogue('premium', this)">⭐ Premium</button>
+</div>
+
+<div class="catalogue-grid" id="catalogueGrid">
+  <div class="loading">Chargement...</div>
+</div>
     </div>
 
     <!-- SECTION MES ACHATS -->
@@ -582,19 +618,64 @@
     }
 
     // ── CATALOGUE ──
-    async function loadCatalogue() {
-      const grid = document.getElementById('catalogueGrid');
-      grid.innerHTML = '<div class="loading">Chargement...</div>';
+    let allItems = [];
+let currentFilter = 'all';
 
-      try {
-        const res = await fetch(`${API_URL}/catalogue`);
-        const items = await res.json();
+function filterCatalogue(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCatalogue();
+}
 
-        if (items.length === 0) {
-          grid.innerHTML = '<div class="empty-state"><span class="emoji">🛍️</span>Aucun contenu disponible pour le moment.</div>';
-          return;
-        }
+function renderCatalogue() {
+  const grid = document.getElementById('catalogueGrid');
+  const purchaseIds = purchases.map(p => p.contentId);
 
+  const filtered = currentFilter === 'all' 
+    ? allItems 
+    : allItems.filter(item => item.category === currentFilter);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><span class="emoji">🛍️</span>Aucun contenu dans cette catégorie.</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(item => {
+    const owned = purchaseIds.includes(item.id);
+    const typeIcon = item.category === 'video' ? '🎥' : item.category === 'premium' ? '⭐' : '📸';
+    return `
+      <div class="content-card" onclick="buyContent('${item.id}', ${item.price}, '${item.title}', ${owned})">
+        <div class="content-preview ${owned ? 'unlocked' : ''}">
+          <div style="font-size:48px;">${typeIcon}</div>
+          <div class="lock-icon">${owned ? '' : '🔒'}</div>
+          <div class="owned-badge">✅ Acheté</div>
+          <div class="content-type-badge">${typeIcon}</div>
+        </div>
+        <div class="content-info">
+          <div class="content-title">${item.title}</div>
+          <div class="content-footer">
+            <div class="content-price">${owned ? '✅' : `💰 ${item.price} pts`}</div>
+            <button class="btn-buy ${owned ? 'owned' : ''}">${owned ? 'Acheté' : 'Acheter'}</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadCatalogue() {
+  const grid = document.getElementById('catalogueGrid');
+  grid.innerHTML = '<div class="loading">Chargement...</div>';
+
+  try {
+    const res = await fetch(`${API_URL}/catalogue`);
+    allItems = await res.json();
+    renderCatalogue();
+  } catch (e) {
+    grid.innerHTML = '<div class="empty-state"><span class="emoji">❌</span>Erreur de chargement.</div>';
+  }
+}
         const purchaseIds = purchases.map(p => p.contentId);
 
         grid.innerHTML = items.map(item => {

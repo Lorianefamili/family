@@ -136,46 +136,27 @@ bot.onText(/\/addcontent/, async (msg) => {
   bot.sendMessage(userId, '📸 Envoie-moi la photo ou vidéo à ajouter au catalogue.');
 
   // Écoute le prochain message de l'admin
-  bot.once('message', async (mediaMsg) => {
-    if (mediaMsg.from.id !== ADMIN_ID) return;
+ bot.sendMessage(ADMIN_ID, '✏️ Donne un titre, un prix et une catégorie séparés par une virgule.\nEx: Photo plage, 50, photo\n\nCatégories: photo / video / premium');
 
-    let fileId = null;
-    let type = null;
+bot.once('message', async (infoMsg) => {
+  if (infoMsg.from.id !== ADMIN_ID) return;
 
-    if (mediaMsg.photo) {
-      fileId = mediaMsg.photo[mediaMsg.photo.length - 1].file_id;
-      type = 'photo';
-    } else if (mediaMsg.video) {
-      fileId = mediaMsg.video.file_id;
-      type = 'video';
-    } else {
-      return bot.sendMessage(ADMIN_ID, '❌ Envoie uniquement une photo ou une vidéo.');
-    }
+  const parts = infoMsg.text.split(',');
+  if (parts.length < 3) return bot.sendMessage(ADMIN_ID, '❌ Format incorrect. Ex: Photo plage, 50, photo');
 
-    bot.sendMessage(ADMIN_ID, '✏️ Donne un titre et un prix séparés par une virgule.\nEx: Photo plage, 50');
+  const title = parts[0].trim();
+  const price = parseInt(parts[1].trim());
+  const category = parts[2].trim().toLowerCase();
 
-    bot.once('message', async (infoMsg) => {
-      if (infoMsg.from.id !== ADMIN_ID) return;
+  if (isNaN(price)) return bot.sendMessage(ADMIN_ID, '❌ Le prix doit être un nombre.');
+  if (!['photo', 'video', 'premium'].includes(category)) {
+    return bot.sendMessage(ADMIN_ID, '❌ Catégorie invalide. Choisis: photo / video / premium');
+  }
 
-      const parts = infoMsg.text.split(',');
-      if (parts.length < 2) {
-        return bot.sendMessage(ADMIN_ID, '❌ Format incorrect. Ex: Photo plage, 50');
-      }
-
-      const title = parts[0].trim();
-      const price = parseInt(parts[1].trim());
-
-      if (isNaN(price)) {
-        return bot.sendMessage(ADMIN_ID, '❌ Le prix doit être un nombre.');
-      }
-
-      await db.collection('content').add({
-        title,
-        price,
-        fileId,
-        type,
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
-      });
+  await db.collection('content').add({
+    title, price, fileId, type, category,
+    createdAt: admin.firestore.FieldValue.serverTimestamp()
+  });
 
       bot.sendMessage(ADMIN_ID, `✅ Contenu ajouté !\n📌 Titre: ${title}\n💰 Prix: ${price} points\n📁 Type: ${type}`);
     });

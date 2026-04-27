@@ -35,6 +35,45 @@ bot.deleteWebHook().then(() => {
 const ADMIN_ID = parseInt(process.env.ADMIN_ID);
 const POINTS_PAR_PUB = parseInt(process.env.POINTS_PAR_PUB) || 10;
 const MINI_APP_URL = process.env.MINI_APP_URL;
+// ─────────────────────────────────────────────
+// COMMANDE /deletecontent (ADMIN)
+// ─────────────────────────────────────────────
+bot.onText(/\/deletecontent/, async (msg) => {
+  const userId = msg.from.id;
+  if (userId !== ADMIN_ID) return bot.sendMessage(userId, '❌ Commande réservée à l\'admin.');
+
+  // Récupérer tous les contenus
+  const snap = await db.collection('content').get();
+  
+  if (snap.empty) {
+    return bot.sendMessage(userId, '❌ Aucun contenu dans la boutique.');
+  }
+
+  let liste = '🗑️ Quel contenu supprimer ? Réponds avec le numéro :\n\n';
+  const items = [];
+  snap.forEach(doc => {
+    items.push({ id: doc.id, ...doc.data() });
+  });
+
+  items.forEach((item, index) => {
+    liste += `${index + 1}. ${item.title} — ${item.price} pts\n`;
+  });
+
+  bot.sendMessage(userId, liste);
+
+  bot.once('message', async (replyMsg) => {
+    if (replyMsg.from.id !== ADMIN_ID) return;
+
+    const choix = parseInt(replyMsg.text) - 1;
+    if (isNaN(choix) || choix < 0 || choix >= items.length) {
+      return bot.sendMessage(userId, '❌ Numéro invalide.');
+    }
+
+    const item = items[choix];
+    await db.collection('content').doc(item.id).delete();
+    bot.sendMessage(userId, `✅ "${item.title}" supprimé de la boutique !`);
+  });
+});
 
 // ─────────────────────────────────────────────
 // COMMANDE /start

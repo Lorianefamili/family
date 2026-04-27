@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+  <script src='//libtl.com/sdk.js' data-zone='10934277' data-sdk='show_10934277'></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MonCanal</title>
@@ -522,17 +522,12 @@
 
     // ── PUB ──
     function watchAd() {
-      if (window.Adsgram) {
-        const AdController = window.Adsgram.init({ blockId: '28820' });
-        AdController.show().then(async () => {
-          await creditPoints();
-        }).catch(() => {
-          showToast('❌ Pub non disponible, réessaie plus tard.');
-        });
-      } else {
-        creditPoints();
-      }
-    }
+  show_10934277().then(async () => {
+    await creditPoints();
+  }).catch(() => {
+    showToast('❌ Pub non disponible, réessaie plus tard.');
+  });
+}
 
     async function creditPoints() {
       try {

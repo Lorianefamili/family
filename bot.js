@@ -1,7 +1,8 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const admin = require('firebase-admin');
-const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+const firebaseKeyStr = process.env.FIREBASE_KEY.replace(/\\n/g, '\n');
+const serviceAccount = JSON.parse(firebaseKeyStr);
 
 // Init Firebase
 admin.initializeApp({
